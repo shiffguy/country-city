@@ -1,0 +1,139 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum GameType {
+  PUBLIC
+  PRIVATE
+}
+
+enum GameStatus {
+  WAITING
+  ACTIVE
+  FINISHED
+}
+
+enum AnswerStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CHALLENGED
+}
+
+enum VoteType {
+  APPROVE
+  REJECT
+}
+
+model User {
+  id          String   @id @default(uuid())
+  nickname    String
+  avatarUrl   String?
+  rating      Int      @default(1000)
+  gamesPlayed Int      @default(0)
+  wins        Int      @default(0)
+  createdAt   DateTime @default(now())
+  lastSeen    DateTime @default(now())
+
+  createdGames Game[]        @relation("CreatedGames")
+  gamePlayers  GamePlayer[]
+  answers      Answer[]
+  votes        Vote[]
+  chatMessages ChatMessage[]
+
+  @@index([rating])
+  @@index([nickname])
+}
+
+model Game {
+  id           String     @id @default(uuid())
+  type         GameType
+  status       GameStatus @default(WAITING)
+  currentLetter String?
+  currentRound Int        @default(0)
+  totalRounds  Int        @default(5)
+  maxPlayers   Int
+  createdById  String
+  inviteCode   String?    @unique
+  categories   String[]
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  createdBy    User          @relation("CreatedGames", fields: [createdById], references: [id], onDelete: Cascade)
+  players      GamePlayer[]
+  answers      Answer[]
+  chatMessages ChatMessage[]
+
+  @@index([status])
+  @@index([inviteCode])
+  @@index([createdById])
+}
+
+model GamePlayer {
+  id       String   @id @default(uuid())
+  gameId   String
+  userId   String
+  score    Int      @default(0)
+  joinedAt DateTime @default(now())
+
+  game Game @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([gameId, userId])
+  @@index([gameId])
+  @@index([userId])
+}
+
+model Answer {
+  id              String       @id @default(uuid())
+  gameId          String
+  round           Int
+  userId          String
+  category        String
+  answerText      String
+  status          AnswerStatus @default(PENDING)
+  dictionaryValid Boolean      @default(false)
+  score           Int          @default(0)
+
+  game  Game   @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  user  User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  votes Vote[]
+
+  @@index([gameId, round])
+  @@index([userId])
+  @@index([gameId, round, category])
+}
+
+model Vote {
+  id          String   @id @default(uuid())
+  answerId    String
+  voterUserId String
+  vote        VoteType
+  createdAt   DateTime @default(now())
+
+  answer Answer @relation(fields: [answerId], references: [id], onDelete: Cascade)
+  voter  User   @relation(fields: [voterUserId], references: [id], onDelete: Cascade)
+
+  @@unique([answerId, voterUserId])
+  @@index([answerId])
+  @@index([voterUserId])
+}
+
+model ChatMessage {
+  id        String   @id @default(uuid())
+  gameId    String
+  userId    String
+  message   String
+  createdAt DateTime @default(now())
+
+  game Game @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([gameId])
+  @@index([userId])
+}

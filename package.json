@@ -1,0 +1,20 @@
+{
+  "name": "country-city",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev:server": "npm run dev -w @country-city/server",
+    "dev:mobile": "npm run dev -w @country-city/mobile",
+    "build:shared": "npm run build -w @country-city/shared",
+    "build:server": "npm run build -w @country-city/server",
+    "build": "npm run build:shared && npm run build:server",
+    "seed": "npm run seed -w @country-city/server",
+    "migrate": "npm run migrate -w @country-city/server",
+    "docker:up": "docker-compose up -d",
+    "docker:down": "docker-compose down"
+  }
+}
