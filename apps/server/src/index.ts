@@ -79,7 +79,7 @@ async function main(): Promise<void> {
   initializeSocketHandlers(io);
 
   // Start listening
-  httpServer.listen(PORT, () => {
+  httpServer.listen(PORT, '0.0.0.0', () => {
     console.log(`
 ╔════════════════════════════════════════════╗
 ║     🎮 ארץ עיר - Country City Server      ║

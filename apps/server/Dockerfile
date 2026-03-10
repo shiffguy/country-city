@@ -27,8 +27,7 @@ RUN npx prisma generate
 RUN npx tsc
 
 ENV NODE_ENV=production
-ENV PORT=3000
 
 EXPOSE 3000
 
-CMD ["sh", "-c", "npx prisma db push --skip-generate && node dist/index.js"]
+CMD ["sh", "-c", "npx prisma db push --skip-generate || echo 'DB push failed, continuing anyway'; node dist/index.js"]
