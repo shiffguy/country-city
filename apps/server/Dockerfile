@@ -1,48 +1,34 @@
-FROM node:20-alpine AS builder
+FROM node:20-alpine
 
 WORKDIR /app
 
-# Copy root workspace files
-COPY package.json ./
+# Copy only server and shared package files
 COPY packages/shared/package.json ./packages/shared/
+COPY packages/shared/src/ ./packages/shared/src/
+COPY packages/shared/tsconfig.json ./packages/shared/
+
 COPY apps/server/package.json ./apps/server/
+COPY apps/server/tsconfig.json ./apps/server/
+COPY apps/server/prisma/ ./apps/server/prisma/
+COPY apps/server/src/ ./apps/server/src/
 
-# Install dependencies
-RUN npm install --workspace=@country-city/shared --workspace=@country-city/server
+# Install shared deps and build
+WORKDIR /app/packages/shared
+RUN npm install && npx tsc
 
-# Copy source code
-COPY packages/shared/ ./packages/shared/
-COPY apps/server/ ./apps/server/
-
-# Build shared package
-RUN npm run build --workspace=@country-city/shared
+# Install server deps
+WORKDIR /app/apps/server
+RUN npm install
 
 # Generate Prisma client
-RUN cd apps/server && npx prisma generate
+RUN npx prisma generate
 
 # Build server
-RUN npm run build --workspace=@country-city/server
-
-# Production stage
-FROM node:20-alpine AS runner
-
-WORKDIR /app
-
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/packages/shared/dist ./packages/shared/dist
-COPY --from=builder /app/packages/shared/package.json ./packages/shared/package.json
-COPY --from=builder /app/apps/server/dist ./apps/server/dist
-COPY --from=builder /app/apps/server/package.json ./apps/server/package.json
-COPY --from=builder /app/apps/server/prisma ./apps/server/prisma
-COPY --from=builder /app/apps/server/src/data ./apps/server/src/data
-COPY --from=builder /app/apps/server/node_modules/.prisma ./apps/server/node_modules/.prisma
-COPY --from=builder /app/package.json ./package.json
+RUN npx tsc
 
 ENV NODE_ENV=production
 ENV PORT=3000
 
 EXPOSE 3000
-
-WORKDIR /app/apps/server
 
 CMD ["sh", "-c", "npx prisma migrate deploy && node dist/index.js"]
