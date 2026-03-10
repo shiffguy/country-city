@@ -6,7 +6,7 @@
 // update PRODUCTION_SERVER_URL with your actual server URL.
 
 const DEV_SERVER_URL = 'http://localhost:3000';
-const PRODUCTION_SERVER_URL = 'https://country-city-server.up.railway.app'; // Update with your actual URL
+const PRODUCTION_SERVER_URL = 'https://country-city-production.up.railway.app';
 
 const isDev = __DEV__;
 

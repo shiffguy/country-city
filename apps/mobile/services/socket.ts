@@ -1,6 +1,8 @@
 import { io, Socket } from 'socket.io-client';
 
-const DEFAULT_SERVER_URL = 'http://localhost:3000';
+import { CONFIG } from '../constants/config';
+
+const DEFAULT_SERVER_URL = CONFIG.SERVER_URL;
 
 type ConnectionStatus = 'connected' | 'disconnected' | 'reconnecting';
 type StatusListener = (status: ConnectionStatus) => void;

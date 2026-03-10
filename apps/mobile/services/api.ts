@@ -1,4 +1,6 @@
-const DEFAULT_BASE_URL = 'http://localhost:3000';
+import { CONFIG } from '../constants/config';
+
+const DEFAULT_BASE_URL = CONFIG.API_BASE_URL;
 
 let baseUrl = DEFAULT_BASE_URL;
 let authToken: string | null = null;
